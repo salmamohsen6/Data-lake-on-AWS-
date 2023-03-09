@@ -4,6 +4,7 @@ import os
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import udf, col
 from pyspark.sql.functions import year, month, dayofmonth, hour, weekofyear, date_format
+from pyspark.sql.types import  TimestampType
 
 
 config = configparser.ConfigParser()
@@ -11,6 +12,7 @@ config.read('dl.cfg')
 
 os.environ['AWS_ACCESS_KEY_ID']=config['AWS']['AWS_ACCESS_KEY_ID']
 os.environ['AWS_SECRET_ACCESS_KEY']=config['AWS']['AWS_SECRET_ACCESS_KEY']
+
 #global vraiables
 input_data = "s3a://udacity-dend/"
 output_data =  "s3a://jk-loaded-data/"
@@ -71,7 +73,7 @@ def process_log_data(spark: SparkSession)-> None:
 
     # extract columns for users table    
     users_table = df.select('userId', 'firstName', 'lastName',
-                            'gender', 'level').dropDuplicates()
+                            'gender', 'level').dropDuplicates(subset=['userId'])
     
     # write users table to parquet files
     users_table.write.parquet(os.path.join(output_data, 'users/users.parquet'), 'overwrite')
